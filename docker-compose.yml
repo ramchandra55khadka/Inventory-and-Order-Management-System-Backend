@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ramchandra
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ioms_network
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:ramchandra@db:5432/inventory_db
+      API_KEY: mysecretkey
+      LOW_STOCK_THRESHOLD: "5"
+    ports:
+      - "8000:8000"
+    command: ["/bin/sh", "-c", "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    networks:
+      - ioms_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  ioms_network:
+    driver: bridge
