@@ -1,0 +1,184 @@
+{
+  "info": {
+    "_postman_id": "5c0c7b0e-6b0c-4cf3-a9a3-1ecb3f9b6d21",
+    "name": "IOMS API - Inventory & Orders",
+    "description": "Postman collection for the Inventory and Order Management API. Includes Items and Orders endpoints with sample payloads and collection variables. All requests require X-API-KEY header.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    { "key": "api_key", "value": "mysecretkey", "type": "string" },
+    { "key": "item_id", "value": "1", "type": "string" },
+    { "key": "order_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/items", "host": ["{{base_url}}"], "path": ["items"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Widget A\",\n  \"description\": \"A sample widget\",\n  \"price\": 9.99,\n  \"stock\": 100,\n  \"is_active\": true\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data && data.id) { pm.collectionVariables.set('item_id', String(data.id)); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] }
+          }
+        },
+        {
+          "name": "List Items (filters & pagination)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": {
+              "raw": "{{base_url}}/items?is_active=true&min_stock=1&max_stock=100&low_stock_only=false&search=widget&limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["items"],
+              "query": [
+                {"key": "is_active", "value": "true"},
+                {"key": "min_stock", "value": "1"},
+                {"key": "max_stock", "value": "100"},
+                {"key": "low_stock_only", "value": "false"},
+                {"key": "search", "value": "widget"},
+                {"key": "limit", "value": "10"},
+                {"key": "offset", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Item (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Widget A Updated\",\n  \"description\": \"Updated description\",\n  \"price\": 12.49,\n  \"stock\": 150,\n  \"is_active\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Partial Update Item (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 10.99,\n  \"stock\": 120\n}"
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": { "raw": "{{base_url}}/items/{{item_id}}", "host": ["{{base_url}}"], "path": ["items", "{{item_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders", "host": ["{{base_url}}"], "path": ["orders"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"items\": [\n    { \"item_id\": {{item_id}}, \"quantity\": 2 }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "var data = pm.response.json();",
+                  "if (data && data.id) { pm.collectionVariables.set('order_id', String(data.id)); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}", "host": ["{{base_url}}"], "path": ["orders", "{{order_id}}"] }
+          }
+        },
+        {
+          "name": "List Orders (filters & pagination)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": {
+              "raw": "{{base_url}}/orders?status=completed&start_date=2024-01-01&end_date=2030-01-01&limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                {"key": "status", "value": "completed"},
+                {"key": "start_date", "value": "2024-01-01"},
+                {"key": "end_date", "value": "2030-01-01"},
+                {"key": "limit", "value": "10"},
+                {"key": "offset", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "X-API-KEY", "value": "{{api_key}}" } ],
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/cancel", "host": ["{{base_url}}"], "path": ["orders", "{{order_id}}", "cancel"] }
+          }
+        }
+      ]
+    }
+  ]
+}
